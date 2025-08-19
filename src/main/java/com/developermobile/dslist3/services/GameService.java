@@ -16,12 +16,17 @@ public class GameService {
     private GameRepository repository;
 
     @Transactional(readOnly = true)
+    public GameDTO findById(Long id) {
+        return new GameDTO(repository.findById(id).get());
+    }
+
+    @Transactional(readOnly = true)
     public List<GameMinDTO> findAll() {
         return repository.findAll().stream().map(GameMinDTO::new).toList();
     }
 
     @Transactional(readOnly = true)
-    public GameDTO findById(Long id) {
-        return new GameDTO(repository.findById(id).get());
+    public List<GameMinDTO> findByList(Long listId) {
+        return repository.searchByList(listId).stream().map(GameMinDTO::new).toList();
     }
 }
