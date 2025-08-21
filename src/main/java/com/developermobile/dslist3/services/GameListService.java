@@ -1,8 +1,9 @@
 package com.developermobile.dslist3.services;
 
 import com.developermobile.dslist3.dto.GameListDTO;
-import com.developermobile.dslist3.dto.GameMinDTO;
+import com.developermobile.dslist3.projections.GameMinProjection;
 import com.developermobile.dslist3.repositories.GameListRepository;
+import com.developermobile.dslist3.repositories.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +14,28 @@ import java.util.List;
 public class GameListService {
 
     @Autowired
-    private GameListRepository repository;
+    private GameListRepository gameListRepository;
+
+    @Autowired
+    private GameRepository gameRepository;
 
     @Transactional(readOnly = true)
     public List<GameListDTO> findAll() {
-        return repository.findAll().stream().map(GameListDTO::new).toList();
+        return gameListRepository.findAll().stream().map(GameListDTO::new).toList();
     }
 
+    @Transactional
+    public void move(Long listId, int sourceIndex, int destinationIndex) {
+        List<GameMinProjection> list = gameRepository.searchByList(listId);
+
+        GameMinProjection obj = list.remove(sourceIndex);
+        list.add(destinationIndex, obj);
+
+        int min = sourceIndex < destinationIndex ? sourceIndex : destinationIndex;
+        int max = sourceIndex < destinationIndex ? destinationIndex : sourceIndex;
+
+        for (int i = min; i <= max; i++) {
+            gameListRepository.updateBelongingPosition(listId, list.get(i).getId(), i);
+        }
+    }
 }
